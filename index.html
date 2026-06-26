@@ -4,26 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Сколько тебе осталось? 🥺</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <script src="script.js" defer></script>
+    <!-- ======== Главный экран ======== -->
+    <main class="app" id="app" hidden>
+        <!-- Левая колонка: статистика -->
+        <aside class="panel">
+            <header class="panel__head">
+                <p class="eyebrow">Memento mori</p>
+                <h1 class="panel__title">Сколько тебе осталось? 🥺</h1>
+                <p class="panel__sub" id="lifespanLabel"></p>
+            </header>
 
-    <div class="mainpage">
-        <div class = "textmenu">
-            <label>Ваша Дата рождения:</label>
-            <input type="date" value="2000-01-01">
+            <!-- Таймер обратного отсчёта -->
+            <section class="countdown">
+                <p class="countdown__cap">До конца отведённого времени осталось</p>
+                <div class="countdown__row">
+                    <div class="cd"><span id="cdDays">0</span><i>дней</i></div>
+                    <div class="cd"><span id="cdH">00</span><i>часов</i></div>
+                    <div class="cd"><span id="cdM">00</span><i>минут</i></div>
+                    <div class="cd"><span id="cdS">00</span><i>секунд</i></div>
+                </div>
+            </section>
 
-            <!-- <button>Вычислить</button> -->
-        </div>
+            <!-- Прогресс -->
+            <section class="progress">
+                <div class="progress__top">
+                    <span id="pctLabel">0%</span>
+                    <span class="muted">жизни прожито</span>
+                </div>
+                <div class="progress__bar"><span id="progressFill"></span></div>
+            </section>
 
-        <div class = "stats">
-            <div class="container"></div>
+            <!-- Сетка статистики -->
+            <section class="stats">
+                <div class="stat stat--accent">
+                    <span class="stat__num" id="weeksLeft">0</span>
+                    <span class="stat__lbl">недель осталось</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" id="weeksLived">0</span>
+                    <span class="stat__lbl">недель прожито</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" id="yearsLeft">0</span>
+                    <span class="stat__lbl">лет впереди</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" id="age">0</span>
+                    <span class="stat__lbl">полных лет</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" id="daysLeft">0</span>
+                    <span class="stat__lbl">дней осталось</span>
+                </div>
+                <div class="stat">
+                    <span class="stat__num" id="monthsLeft">0</span>
+                    <span class="stat__lbl">месяцев осталось</span>
+                </div>
+            </section>
+
+            <p class="enddate" id="endDate"></p>
+
+            <blockquote class="quote" id="quote">
+                <p id="quoteText"></p>
+                <cite id="quoteAuthor"></cite>
+            </blockquote>
+
+            <button class="btn btn--ghost" id="settings">⚙ Изменить параметры</button>
+        </aside>
+
+        <!-- Правая колонка: сетка недель -->
+        <section class="board">
+            <div class="board__head">
+                <h2>Каждый квадрат — одна неделя жизни</h2>
+                <div class="legend">
+                    <span class="legend__item"><i class="dot dot--past"></i> прожито</span>
+                    <span class="legend__item"><i class="dot dot--now"></i> сейчас</span>
+                    <span class="legend__item"><i class="dot dot--future"></i> впереди</span>
+                </div>
+            </div>
+            <div class="chart" id="chart">
+                <div class="corner"><span>нед.→</span></div>
+                <div class="axis axis-x" id="axisX"></div>
+                <div class="axis axis-y" id="axisY"></div>
+                <div class="grid" id="grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ======== Модальное окно настроек ======== -->
+    <div class="overlay" id="overlay">
+        <div class="card" role="dialog" aria-modal="true">
+            <p class="eyebrow">Memento mori</p>
+            <h2 class="card__title">Сколько у тебя времени?</h2>
+            <p class="card__sub">Несколько честных вопросов — и мы оценим твою ожидаемую продолжительность жизни и построим её карту по неделям.</p>
+
+            <form id="form" class="form">
+                <label class="field">
+                    <span class="field__lbl">Дата рождения</span>
+                    <input type="date" id="birth" value="2000-01-01" max="2026-06-26" required>
+                </label>
+
+                <div class="field">
+                    <span class="field__lbl">Пол</span>
+                    <div class="segmented" id="sex">
+                        <button type="button" data-v="f">Женский</button>
+                        <button type="button" data-v="m" class="is-active">Мужской</button>
+                    </div>
+                </div>
+
+                <label class="field">
+                    <span class="field__lbl">Страна проживания</span>
+                    <select id="country">
+                        <option value="ru" selected>Россия</option>
+                        <option value="ua">Украина</option>
+                        <option value="by">Беларусь</option>
+                        <option value="kz">Казахстан</option>
+                        <option value="us">США</option>
+                        <option value="gb">Великобритания</option>
+                        <option value="de">Германия</option>
+                        <option value="fr">Франция</option>
+                        <option value="jp">Япония</option>
+                        <option value="world">Среднемировое</option>
+                    </select>
+                </label>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span class="field__lbl">Рост, см</span>
+                        <input type="number" id="height" value="175" min="120" max="230">
+                    </label>
+                    <label class="field">
+                        <span class="field__lbl">Вес, кг</span>
+                        <input type="number" id="weight" value="70" min="35" max="250">
+                    </label>
+                </div>
+
+                <div class="field">
+                    <span class="field__lbl">Курение</span>
+                    <div class="segmented" id="smoke">
+                        <button type="button" data-v="never" class="is-active">Никогда</button>
+                        <button type="button" data-v="former">Бросил</button>
+                        <button type="button" data-v="current">Курю</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="field__lbl">Физическая активность</span>
+                    <div class="segmented" id="activity">
+                        <button type="button" data-v="low">Низкая</button>
+                        <button type="button" data-v="mid" class="is-active">Средняя</button>
+                        <button type="button" data-v="high">Высокая</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="field__lbl">Алкоголь</span>
+                    <div class="segmented" id="alcohol">
+                        <button type="button" data-v="rare" class="is-active">Редко</button>
+                        <button type="button" data-v="moderate">Умеренно</button>
+                        <button type="button" data-v="heavy">Часто</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn--primary">Построить мою жизнь →</button>
+            </form>
         </div>
     </div>
-    
-    
-    <!-- <button id="openBtn">Настройки</button> -->
 
+    <script src="script.js" defer></script>
 </body>
 </html>
